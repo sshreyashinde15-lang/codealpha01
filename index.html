@@ -3,102 +3,88 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Image Gallery</title>
+<title>Calculator</title>
 
 <style>
-/* ===== BODY ===== */
 body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    background: #f4f4f4;
-    text-align: center;
-}
-
-h1 {
-    margin: 20px;
-}
-
-/* ===== FILTER BUTTONS ===== */
-.filters {
-    margin-bottom: 10px;
-}
-
-.filters button {
-    padding: 10px 15px;
-    margin: 5px;
-    border: none;
-    background: #333;
-    color: white;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: 0.3s;
-}
-
-.filters button:hover,
-.filters button.active {
-    background: #ff9800;
-}
-
-/* ===== GALLERY GRID ===== */
-.gallery {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    padding: 20px;
-}
-
-.gallery img {
-    width: 100%;
-    height: 200px;
-    object-fit: cover;
-    border-radius: 10px;
-    cursor: pointer;
-    transition: transform 0.4s, filter 0.4s;
-}
-
-.gallery img:hover {
-    transform: scale(1.05);
-    filter: brightness(80%);
-}
-
-/* ===== LIGHTBOX ===== */
-.lightbox {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.9);
+    display: flex;
     justify-content: center;
     align-items: center;
-    flex-direction: column;
-    z-index: 1000;
+    height: 100vh;
+    background: linear-gradient(135deg, #667eea, #764ba2);
+    font-family: Arial, sans-serif;
 }
 
-.lightbox img {
-    width: 60%;
-    max-width: 700px;
+.calculator {
+    background: #1e1e1e;
+    padding: 20px;
+    border-radius: 15px;
+    width: 320px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+}
+
+.display {
+    width: 100%;
+    height: 60px;
+    font-size: 26px;
+    margin-bottom: 15px;
+    text-align: right;
+    padding: 10px;
     border-radius: 10px;
-    margin: 15px 0;
+    border: none;
+    outline: none;
 }
 
-.lightbox button {
-    margin: 5px;
-    padding: 10px 15px;
+.buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+button {
+    padding: 15px;
+    font-size: 18px;
     border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    background: #333;
+    color: white;
+    transition: 0.2s;
+}
+
+button:hover {
+    background: #ff9800;
+}
+
+.operator {
+    background: #444;
+}
+
+.equal {
+    grid-column: span 2;
     background: #ff9800;
     color: white;
-    cursor: pointer;
-    border-radius: 5px;
-    transition: 0.3s;
 }
 
-.lightbox button:hover {
+.equal:hover {
     background: #e68900;
 }
 
-/* ===== RESPONSIVE ===== */
-@media(max-width:600px){
-    .lightbox img{
-        width: 90%;
+.clear {
+    background: red;
+}
+
+.clear:hover {
+    background: darkred;
+}
+
+.backspace {
+    background: #555;
+}
+
+@media(max-width:400px){
+    .calculator{
+        width: 95%;
     }
 }
 </style>
@@ -106,82 +92,73 @@ h1 {
 
 <body>
 
-<h1>Image Gallery</h1>
+<div class="calculator">
+    <input type="text" class="display" id="display" disabled>
 
-<div class="filters">
-    <button class="active" onclick="filterImages('all', this)">All</button>
-    <button onclick="filterImages('nature', this)">Nature</button>
-    <button onclick="filterImages('city', this)">City</button>
-</div>
+    <div class="buttons">
+        <button onclick="clearDisplay()" class="clear">C</button>
+        <button onclick="backspace()" class="backspace">⌫</button>
+        <button onclick="append('/')" class="operator">/</button>
+        <button onclick="append('*')" class="operator">*</button>
 
-<div class="gallery">
-    <img src="https://picsum.photos/400/300?1" class="nature">
-    <img src="https://picsum.photos/400/300?2" class="city">
-    <img src="https://picsum.photos/400/300?3" class="nature">
-    <img src="https://picsum.photos/400/300?4" class="city">
-</div>
+        <button onclick="append('7')">7</button>
+        <button onclick="append('8')">8</button>
+        <button onclick="append('9')">9</button>
+        <button onclick="append('-')" class="operator">-</button>
 
-<div class="lightbox" id="lightbox" onclick="outsideClick(event)">
-    <button onclick="prevImage()">Prev</button>
-    <img id="lightbox-img">
-    <button onclick="nextImage()">Next</button>
-    <button onclick="closeLightbox()">Close</button>
+        <button onclick="append('4')">4</button>
+        <button onclick="append('5')">5</button>
+        <button onclick="append('6')">6</button>
+        <button onclick="append('+')" class="operator">+</button>
+
+        <button onclick="append('1')">1</button>
+        <button onclick="append('2')">2</button>
+        <button onclick="append('3')">3</button>
+
+        <button onclick="append('0')">0</button>
+        <button onclick="append('.')">.</button>
+        <button onclick="calculate()" class="equal">=</button>
+    </div>
 </div>
 
 <script>
-let images = document.querySelectorAll(".gallery img");
-let lightbox = document.getElementById("lightbox");
-let lightboxImg = document.getElementById("lightbox-img");
-let currentIndex = 0;
+const display = document.getElementById("display");
 
-// Open Lightbox
-images.forEach((img, index) => {
-    img.addEventListener("click", () => {
-        lightbox.style.display = "flex";
-        lightboxImg.src = img.src;
-        currentIndex = index;
-    });
-});
-
-// Close Lightbox
-function closeLightbox(){
-    lightbox.style.display = "none";
+function append(value){
+    display.value += value;
 }
 
-// Next Image
-function nextImage(){
-    currentIndex = (currentIndex + 1) % images.length;
-    lightboxImg.src = images[currentIndex].src;
+function clearDisplay(){
+    display.value = "";
 }
 
-// Previous Image
-function prevImage(){
-    currentIndex = (currentIndex - 1 + images.length) % images.length;
-    lightboxImg.src = images[currentIndex].src;
+function backspace(){
+    display.value = display.value.slice(0, -1);
 }
 
-// Filter Images
-function filterImages(category, btn){
-    images.forEach(img => {
-        if(category === "all" || img.classList.contains(category)){
-            img.style.display = "block";
-        } else {
-            img.style.display = "none";
-        }
-    });
-
-    // Active button highlight
-    document.querySelectorAll(".filters button")
-        .forEach(b => b.classList.remove("active"));
-    btn.classList.add("active");
-}
-
-// Close if clicked outside image
-function outsideClick(e){
-    if(e.target === lightbox){
-        closeLightbox();
+function calculate(){
+    try {
+        display.value = Function('"use strict";return (' + display.value + ')')();
+    } catch {
+        display.value = "Error";
     }
 }
+
+// Keyboard Support
+document.addEventListener("keydown", function(event){
+    if("0123456789+-*/.".includes(event.key)){
+        append(event.key);
+    } 
+    else if(event.key === "Enter"){
+        calculate();
+    } 
+    else if(event.key === "Backspace"){
+        backspace();
+    } 
+    else if(event.key === "Escape"){
+        clearDisplay();
+    }
+});
 </script>
 
 </body>
